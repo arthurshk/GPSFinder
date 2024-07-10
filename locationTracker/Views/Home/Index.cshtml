@@ -1,0 +1,48 @@
+﻿@{
+    ViewBag.Title = "Location";
+}
+
+<h2>Your Current Location</h2>
+
+<button id="getLocation">Get Location</button>
+<p id="location"></p>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#getLocation').click(function () {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                $('#location').text("Geolocation is not supported by this browser.");
+            }
+        });
+
+        function showPosition(position) {
+            var lat = position.coords.latitude;
+            var lon = position.coords.longitude;
+            $('#location').html("Latitude: " + lat + "<br>Longitude: " + lon);
+
+            $.post('/Home/SaveLocation', { latitude: lat, longitude: lon }, function (response) {
+                console.log(response);
+            });
+        }
+
+        function showError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    $('#location').text("User denied the request for Geolocation.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    $('#location').text("Location information is unavailable.");
+                    break;
+                case error.TIMEOUT:
+                    $('#location').text("The request to get user location timed out.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    $('#location').text("An unknown error occurred.");
+                    break;
+            }
+        }
+    });
+</script>
