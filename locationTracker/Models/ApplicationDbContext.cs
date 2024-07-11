@@ -1,4 +1,5 @@
 ﻿using locationTracker.Models;
+using Microsoft.EntityFrameworkCore;
 
 public class ApplicationDbContext : DbContext
 {
