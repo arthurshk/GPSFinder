@@ -1,19 +1,47 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function () {
     const getLocationBtn = document.getElementById('getLocationBtn');
     const locationDisplay = document.getElementById('location');
+    const mapElement = document.getElementById('map');
+    let map;
+    let marker;
+    let watchId;
 
-    getLocationBtn.addEventListener('click', () => {
+    function initMap(lat, lon) {
+        let location = { lat: lat, lng: lon };
+        map = new google.maps.Map(mapElement, {
+            center: location,
+            zoom: 15
+        });
+        marker = new google.maps.Marker({
+            position: location,
+            map: map
+        });
+    }
+
+    function updateMap(lat, lon) {
+        let location = { lat: lat, lng: lon };
+        map.setCenter(location);
+        marker.setPosition(location);
+    }
+
+    getLocationBtn.addEventListener('click', function () {
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(showPosition, showError);
+            watchId = navigator.geolocation.watchPosition(showPosition, showError);
         } else {
             locationDisplay.textContent = "Geolocation is not supported by this browser.";
         }
     });
 
     function showPosition(position) {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        locationDisplay.innerHTML = `Latitude: ${lat} <br>Longitude: ${lon}`;
+        let lat = position.coords.latitude;
+        let lon = position.coords.longitude;
+        locationDisplay.innerHTML = 'Latitude: ' + lat + '<br>Longitude: ' + lon;
+
+        if (!map) {
+            initMap(lat, lon);
+        } else {
+            updateMap(lat, lon);
+        }
 
         fetch('/Home/SaveLocation', {
             method: 'POST',
@@ -22,11 +50,13 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             body: JSON.stringify({ latitude: lat, longitude: lon })
         })
-            .then(response => response.json())
-            .then(data => {
+            .then(function (response) {
+                return response.json();
+            })
+            .then(function (data) {
                 console.log(data);
             })
-            .catch(error => {
+            .catch(function (error) {
                 console.error('Error:', error);
             });
     }
@@ -47,4 +77,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
         }
     }
+
+    function stopTracking() {
+        if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+            watchId = null;
+            locationDisplay.innerHTML = ""; 
+        }
+    }
+    let stopTrackingBtn = document.createElement('button');
+    stopTrackingBtn.textContent = 'Stop Tracking';
+    document.body.appendChild(stopTrackingBtn);
+    stopTrackingBtn.addEventListener('click', stopTracking);
 });
