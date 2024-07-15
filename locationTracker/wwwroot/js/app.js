@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
             locationDisplay.innerHTML = ""; 
         }
     }
-    let stopTrackingBtn = document.createElement('button');
+    const stopTrackingBtn = document.createElement('button');
     stopTrackingBtn.textContent = 'Stop Tracking';
     document.body.appendChild(stopTrackingBtn);
     stopTrackingBtn.addEventListener('click', stopTracking);
